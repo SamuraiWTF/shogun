@@ -1,0 +1,6 @@
+domain: example.com
+labs:
+  - name: dojo-basic
+    docker_compose: docker_compose_templates/dojo-basic.yaml
+    subdomain_routes:
+      main: web_port
