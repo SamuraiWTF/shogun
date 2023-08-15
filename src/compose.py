@@ -122,8 +122,20 @@ def delete_student_container(student_id, lab_id, norestart=False):
         nginx.remove_server(server.name)
 
         container_name = f"{server.student_id}-{server.lab_id}"
+
+        # Get the directory where compose.py is located
+        compose_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Get the parent directory of the compose directory
+        parent_dir = os.path.dirname(compose_dir)
+
+        # Create the tmp directory inside the parent directory if it doesn't exist
+        tmp_dir = os.path.join(parent_dir, 'tmp')
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        # Create the temporary file path
         tmp_file_name = f"{container_name}-docker-compose.yaml"
-        tmp_file_path = os.path.join('tmp', tmp_file_name)
+        tmp_file_path = os.path.join(tmp_dir, tmp_file_name)
         print(f"Stopping and removing container {container_name}")
 
         os.system(f"docker-compose -p {container_name} down")
