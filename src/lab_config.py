@@ -6,12 +6,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+root_domain = os.getenv('ROOT_DOMAIN')
+
 
 # Define a config class that will load the config from a yaml file and store it as a dictionary.
 class Config:
     def __init__(self, config_file):
         self.config_file = config_file
         self.config = self.load_config()
+
+        # Override the domain if ROOT_DOMAIN is defined
+        if root_domain:
+            self.config['domain'] = root_domain
 
     def load_config(self):
         with open(self.config_file, 'r') as f:

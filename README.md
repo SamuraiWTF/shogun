@@ -63,8 +63,10 @@ Adjust your `.env` file to include relevant SSL related variables:
 USE_SSL=true  # or false, depending on whether you wish to use SSL
 SSL_CERT_PATH=/etc/nginx/ssl/nginx.crt
 SSL_KEY_PATH=/etc/nginx/ssl/nginx.key
+ROOT_DOMAIN=example.com
 ```
 Use the actual paths to your SSL certificate and key files.
+Use the actual root domain for your lab environment.
 
 
 ## CLI Usage:
