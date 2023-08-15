@@ -138,8 +138,12 @@ def delete_student_container(student_id, lab_id, norestart=False):
         tmp_file_path = os.path.join(tmp_dir, tmp_file_name)
         print(f"Stopping and removing container {container_name}")
 
-        os.system(f"docker-compose -p {container_name} down")
-        if os.path.exists(tmp_file_path):
+        delete_command = f"docker-compose -p {container_name} -f {tmp_file_path} down"
+        exit_code = os.system(delete_command)
+
+        if exit_code != 0:
+            print(f"Failed to stop and remove container {container_name} while running command: {delete_command}")
+        elif os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
 
     nginx.save()
