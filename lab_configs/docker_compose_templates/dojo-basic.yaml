@@ -1,20 +1,20 @@
 version: '3'
 services:
-  basicdb:
+  dojo-basic-db_{{ student_id }}:
     image: ghcr.io/samuraiwtf/dojo-basic-db:latest
     environment:
       MYSQL_ROOT_PASSWORD: samurai
       MYSQL_DATABASE: samurai_dojo_basic
     container_name: '{{ student_id }}_{{ lab_id }}_db'
 
-  dojo-basic:
+  dojo-basic-web_{{ student_id }}:
     image: ghcr.io/samuraiwtf/dojo-basic:latest
     ports:
       - "{{ web_port }}:80"
     links:
-      - basicdb
+      - dojo-basic-db_{{ student_id }}:basicdb
     depends_on:
-      - basicdb
+      - dojo-basic-db_{{ student_id }}
     container_name: '{{ student_id }}_{{ lab_id }}_web'
     labels:
       - 'lab_id={{ lab_id }}'
