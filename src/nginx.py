@@ -2,19 +2,34 @@ import os
 
 from dotenv import load_dotenv
 
+from certificate_providers import NoneProvider, SelfSignedProvider
+
 load_dotenv()
 
 NGINX_CONF_DIR = os.environ.get('NGINX_CONF_DIR', '/etc/nginx/')
 NGINX_CONFIG_PATH = os.path.join(os.path.dirname(NGINX_CONF_DIR), 'shogun.conf')
-USE_SSL = os.environ.get('USE_SSL') == 'true'
-SSL_CERT_PATH = os.environ.get('SSL_CERT_PATH')
-SSL_KEY_PATH = os.environ.get('SSL_KEY_PATH')
+
+# Environment variable for selecting the certificate provider
+CERT_PROVIDER_ENV = os.environ.get('CERT_PROVIDER', 'NONE').upper()
+
+def load_certificate_provider():
+    """
+    Loads and returns the certificate provider based on the environment configuration.
+    """
+    if CERT_PROVIDER_ENV == 'NONE':
+        return NoneProvider()
+    elif CERT_PROVIDER_ENV == 'SELF_SIGNED':
+        return SelfSignedProvider()
+    else:
+        raise ValueError(f"Unsupported certificate provider: {CERT_PROVIDER_ENV}")
 
 
 class ShogunServer:
     def __init__(self, student_id, subdomain, lab_id, domain, target_ip, target_port, listen_ports=None):
+        self.certificate_provider = load_certificate_provider()
         if listen_ports is None:
-            if USE_SSL:
+            # If no listen ports are specified, default to 80 and 443 if the NoneProvider is not used
+            if not isinstance(self.certificate_provider, NoneProvider):
                 listen_ports = [443, 80]
             else:
                 listen_ports = [80]
@@ -25,12 +40,18 @@ class ShogunServer:
         self.domain = domain
         self.target_ip = target_ip
         self.target_port = target_port
-        self.listen_ports = listen_ports
+        # convert listen ports to strings
+        self.listen_ports = [str(port) for port in listen_ports]
 
-    # Generate a single metadata comment line for simply parsing the config to retrieve the servers from the nginx config
+
+    # Generate a single metadata comment for simply parsing the config to retrieve the servers from the nginx config
     # The format will be "# METADATA:student_id|subdomain|lab_id|domain|target_ip|target_port|listen_ports"
     def _generate_metadata(self):
-        return f"# METADATA:{self.student_id}|{self.subdomain}|{self.lab_id}|{self.domain}|{self.target_ip}|{self.target_port}|{','.join(str(port) for port in self.listen_ports)}"
+        # the ports are stored as strings and may include 'ssl' if the certificate provider is not NoneProvider.
+        # For the metadata we need to remove the 'ssl' string so that it can be parsed as an integer
+        listen_ports = ",".join([port.replace("ssl", "") for port in self.listen_ports])
+
+        return f"# METADATA:{self.student_id}|{self.subdomain}|{self.lab_id}|{self.domain}|{self.target_ip}|{self.target_port}|{listen_ports}"
 
     # Class method to parse a metadata comment line and return a Server object
     # All parameters are strings except for listen_ports, which is a list of integers
@@ -42,20 +63,25 @@ class ShogunServer:
                    [int(port) for port in metadata[6].split(",")])
 
     def generate_raw_block(self):
-        ssl_str = ""
-        if 443 in self.listen_ports and USE_SSL:
-            ssl_str = f"""
-                ssl_certificate     {SSL_CERT_PATH};
-                ssl_certificate_key {SSL_KEY_PATH};
-                ssl on;
+        cert_path, key_path = self.certificate_provider.get_certificate_paths(self.lab_id)
+        ssl_config = ""
+
+        if "443" in self.listen_ports and not isinstance(self.certificate_provider, NoneProvider):
+            ssl_config = f"""
+    ssl_certificate     {cert_path};
+    ssl_certificate_key {key_path};                
+    ssl_prefer_server_ciphers off;
                 """
+            # append ssl to the 443 listen port (e.g. "listen 443 ssl;")
+            self.listen_ports[self.listen_ports.index("443")] = f"443 ssl"
 
         listen_port_str = "\n".join(f"    listen {port};" for port in self.listen_ports)
         return f"""{self._generate_metadata()}
-        server {{
+server {{
+{ssl_config}
 {listen_port_str}
     server_name {self.name};
-    {ssl_str}
+    
     location / {{
         proxy_pass http://{self.target_ip}:{self.target_port};
         proxy_set_header Host $host;
