@@ -240,5 +240,6 @@ cython_debug/
 #.idea/
 
 tmp/
+certs/
 
 .idea/**/*

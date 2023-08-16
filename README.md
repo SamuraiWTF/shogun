@@ -44,13 +44,16 @@ This project is designed for creating student labs using Docker and Nginx. It pr
    
 4. Setting up SSL with Nginx (Optional):
 
-**Acquire an SSL Certificate (Self-Signed):**
+Shogun can be configured to automatically generate certificates by using a certificate provider.  The following providers are supported:
 
-If you need one, you can generate a self-signed certificate using the following command
-(useful for testing and dev purposes):
+- NONE: No SSL certificates will be generated.  This is the default.
+- SELF_SIGNED: Self-signed certificates will be generated automatically.
 
+To configure the certificate provider, set the `CERT_PROVIDER` environment variable to the desired provider. This can be done in the `.env` file or by setting the environment variable directly.
+
+For example, to use self-signed certificates, set the following environment variable:
 ```
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt
+CERT_PROVIDER=SELF_SIGNED
 ```
 
 **Modify the Nginx Configuration:**
@@ -60,13 +63,11 @@ Environment Variables:
 Adjust your `.env` file to include relevant SSL related variables:
 
 ```
-USE_SSL=true  # or false, depending on whether you wish to use SSL
-SSL_CERT_PATH=/etc/nginx/ssl/nginx.crt
-SSL_KEY_PATH=/etc/nginx/ssl/nginx.key
 ROOT_DOMAIN=example.com
 ```
-Use the actual paths to your SSL certificate and key files.
 Use the actual root domain for your lab environment.
+
+
 
 
 ## CLI Usage:

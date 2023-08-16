@@ -8,6 +8,7 @@ pyyaml = "*"
 docker = "*"
 jinja2 = "*"
 python-dotenv = "*"
+cryptography = "*"
 
 [dev-packages]
 
