@@ -1,0 +1,12 @@
+version: '3'
+services:
+  juice-shop_{{ student_id }}:
+    image: bkimminich/juice-shop:latest
+    ports:
+      - "{{ web_port }}:3000"
+    container_name: '{{ student_id }}_{{ lab_id }}'
+    labels:
+      - 'lab_id={{ lab_id }}'
+      - 'student_id={{ student_id }}'
+
+
