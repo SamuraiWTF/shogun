@@ -4,3 +4,7 @@ labs:
     docker_compose: docker_compose_templates/dojo-basic.yaml
     subdomain_routes:
       main: web_port
+  - name: juice-shop
+    docker_compose: docker_compose_templates/juice-shop.yaml
+    subdomain_routes:
+      main: web_port
