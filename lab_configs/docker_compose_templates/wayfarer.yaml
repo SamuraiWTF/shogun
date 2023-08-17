@@ -20,7 +20,7 @@ services:
         - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
     container_name: '{{ student_id }}_{{ lab_id }}_app'
 
-  ticketapi:
+  ticketapi_{{ student_id }}:
     image: ghcr.io/samuraiwtf/wayfarer-api:latest
     ports:
       - "{{ api_port }}:3001"
