@@ -49,7 +49,8 @@ def create_student_container(student_id, lab_id, norestart=False, save=True, tem
 
     compose_variables = {'lab_id': lab_id,
                          'student_id': student_id,
-                         'container_name': container_name}
+                         'container_name': container_name,
+                         'domain': domain}
 
     # The subdomain_routes are a mapping of subdomains to port variables. This is used to create nginx server blocks.
     # The subdomain route key "main" is used to mean no subdomain.

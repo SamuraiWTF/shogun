@@ -8,3 +8,8 @@ labs:
     docker_compose: docker_compose_templates/juice-shop.yaml
     subdomain_routes:
       main: web_port
+  - name: wayfarer
+    docker_compose: docker_compose_templates/wayfarer.yaml
+    subdomain_routes:
+      app: web_port
+      api: api_port

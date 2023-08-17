@@ -1,0 +1,37 @@
+version: '3'
+services:
+  sqldb_{{ student_id }}:
+    image: ghcr.io/samuraiwtf/wayfarer-db:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+      constraint: node==node01
+    container_name: '{{ student_id }}_{{ lab_id }}_db'
+
+  ticketapp_{{ student_id }}:
+    image: ghcr.io/samuraiwtf/wayfarer-app:latest
+    ports:
+      - "{{ web_port }}:3000"
+    links:
+      - sqldb_{{ student_id }}:sqldb
+    depends_on:
+      - sqldb_{{ student_id }}
+    environment:
+        - APP_PORT=443
+        - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
+    container_name: '{{ student_id }}_{{ lab_id }}_app'
+
+  ticketapi:
+    image: ghcr.io/samuraiwtf/wayfarer-api:latest
+    ports:
+      - "{{ api_port }}:3001"
+    links:
+      - sqldb_{{ student_id }}:sqldb
+    depends_on:
+      - sqldb_{{ student_id }}
+    environment:
+        - API_PUBLIC_PORT={{ api_port }}
+        - API_PORT=3001
+        - API_CORS_TYPE=literal
+        - API_CORS_POLICY=https://{{ student_id }}.app.{{ lab_id }}.{{ domain }}
+        - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
+    container_name: '{{ student_id }}_{{ lab_id }}_api'
