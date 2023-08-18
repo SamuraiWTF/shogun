@@ -13,3 +13,10 @@ labs:
     subdomain_routes:
       app: web_port
       api: api_port
+  - name: musashi-js
+    docker_compose: docker_compose_templates/musashi-js.yaml
+    subdomain_routes:
+      cors: cors_client_port
+      api: cors_api_port
+      csp: csp_app_port
+      jwt: jwt_port

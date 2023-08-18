@@ -1,0 +1,25 @@
+version: '3'
+services:
+  musashi_{{ student_id }}:
+    image: ghcr.io/samuraiwtf/musashi-js:latest
+    ports:
+      - "{{ cors_client_port }}:3021"
+      - "{{ cors_api_port }}:3020"
+      - "{{ csp_app_port }}:3041"
+      - "{{ jwt_port }}:3050"
+    environment:
+      CORS_API_PORT: 3020
+      CORS_API_HOST: {{ student_id }}.api.{{ lab_id }}.{{ domain }}
+      CORS_API_PROXY_PORT: 443
+      CORS_CLIENT_HOST: {{ student_id }}.cors.{{ lab_id }}.{{ domain }}
+      CORS_CLIENT_PORT: 3021
+      OAUTH_PROVIDER_PORT: 3030
+      OAUTH_CLIENT_PORT: 3031
+      CSP_APP_PORT: 3041
+      USE_TLS: TRUE
+      JWT_HOST: {{ student_id }}.jwt.{{ lab_id }}.{{ domain }}
+      JWT_PORT: 3050
+    container_name: '{{ student_id }}_{{ lab_id }}'
+    labels:
+      - 'lab_id={{ lab_id }}'
+      - 'student_id={{ student_id }}'
