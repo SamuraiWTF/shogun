@@ -20,3 +20,7 @@ labs:
       api: cors_api_port
       csp: csp_app_port
       jwt: jwt_port
+  - name: dvwa
+    docker_compose: docker_compose_templates/dvwa.yaml
+    subdomain_routes:
+      main: web_port

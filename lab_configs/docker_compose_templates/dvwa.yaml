@@ -1,0 +1,30 @@
+version: '3'
+services:
+  dvwa_db_{{ student_id }}:
+    image: docker.io/library/mariadb:10
+    environment:
+      - MYSQL_ROOT_PASSWORD=dvwa
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+    volumes:
+      - dvwa:/var/lib/mysql
+    restart: unless-stopped
+
+  dvwa_{{ student_id }}:
+    image: ghcr.io/digininja/dvwa:latest
+    environment:
+      - DB_SERVER=db
+    depends_on:
+      - dvwa_db_{{ student_id }}
+    links:
+      - dvwa_db_{{ student_id }}:db
+    ports:
+      - {{ web_port }}:80
+    restart: unless-stopped
+    labels:
+      - 'lab_id={{ lab_id }}'
+      - 'student_id={{ student_id }}'
+
+volumes:
+    dvwa:
