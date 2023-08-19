@@ -75,7 +75,7 @@ def append_to_file(file_path, content):
 
 # function to find available ports that are not in use on the system and is in the specified range.
 
-def get_available_ports(start=8000, end=9000, count=1):
+def get_available_ports(start=8000, end=9000, count=1, exclude=[]):
     """
     Find available ports that are not in use on the system and is in the specified range.
 
@@ -88,7 +88,7 @@ def get_available_ports(start=8000, end=9000, count=1):
     for port in range(start, end):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex(('localhost', port))
-        if result != 0:
+        if result != 0 and port not in exclude:
             ports.append(port)
         sock.close()
         if len(ports) == count:

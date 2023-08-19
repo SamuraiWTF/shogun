@@ -62,6 +62,10 @@ class ShogunServer:
         return cls(metadata[0], metadata[1], metadata[2], metadata[3], metadata[4], metadata[5],
                    [int(port) for port in metadata[6].split(",")])
 
+    # Convenience method to print the route map (e.g. "student_id.subdomain.lab_id.domain -> target_ip:target_port")
+    def print_route_map(self):
+        return f"{self.name} -> {self.target_ip}:{self.target_port}"
+
     def generate_raw_block(self):
         cert_path, key_path = self.certificate_provider.get_certificate_paths(self.lab_id)
         ssl_config = ""
@@ -96,6 +100,7 @@ class NginxConfig:
 
     def __init__(self, config_path=NGINX_CONFIG_PATH):
         self.config_path = config_path
+        self.in_use_ports = set()
 
         if not os.path.exists(config_path):
             with open(config_path, 'w') as file:
@@ -124,7 +129,9 @@ class NginxConfig:
             for block in raw_config:
                 if block.startswith('# METADATA'):
                     metadata_line = block.split('\n')[0]
-                    servers.append(ShogunServer.from_metadata(metadata_line))
+                    shogun_server = ShogunServer.from_metadata(metadata_line)
+                    servers.append(shogun_server)
+                    self.in_use_ports.add(shogun_server.target_port)
             return servers
 
     def add_server(self, student_id, lab_id, subdomain, domain, target_port, listen_ports=None, target_ip='127.0.0.1'):
@@ -132,9 +139,17 @@ class NginxConfig:
 
         if not any(server.name == new_server.name for server in self.servers):
             self.servers.append(new_server)
+            self.in_use_ports.add(target_port)
+            print(f"Added new server: {new_server.print_route_map()}")
 
     def remove_server(self, server_name):
-        self.servers = [server for server in self.servers if server.name.strip() != server_name.strip()]
+        # remove the server's port from the in_use_ports set
+        server = next((server for server in self.servers if server.name == server_name), None)
+        if server:
+            self.in_use_ports.remove(server.target_port)
+            print(f"Removed server: {server.print_route_map()}")
+            # remove the server from the servers list
+            self.servers.remove(server)
 
     def save(self):
         updated_config = '\n\n'.join([server.generate_raw_block() for server in self.servers])
@@ -142,6 +157,9 @@ class NginxConfig:
 
         with open(self.config_path, 'w') as file:
             file.write(updated_config)
+
+    def get_in_use_ports(self):
+        return list(self.in_use_ports)
 
     @staticmethod
     def reload(norestart=False):

@@ -52,7 +52,6 @@ def main():
             print(f"Created {args.count} containers for student prefix {args.student_id} and lab {args.lab_id}.")
         else:
             create_student_container(args.student_id, args.lab_id, args.norestart)
-            print(f"Created container for student {args.student_id} and lab {args.lab_id}.")
 
     elif args.command == 'delete':
         delete_student_container(args.student_id, args.lab_id, args.norestart)

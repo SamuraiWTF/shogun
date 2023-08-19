@@ -1,4 +1,5 @@
 import os
+import subprocess
 import yaml
 from nginx import NginxConfig
 from utils import get_available_ports
@@ -57,7 +58,7 @@ def create_student_container(student_id, lab_id, norestart=False, save=True, tem
 
     subdomain_routes = lab_config.get('subdomain_routes', {})
 
-    available_ports = get_available_ports(8000, 9000, len(subdomain_routes))
+    available_ports = get_available_ports(8000, 9000, len(subdomain_routes), exclude=nginx.get_in_use_ports())
 
     # cache subdomain to port mapping. Ports will be assigned from available ports.
     subdomain_port_mapping = {}
@@ -74,7 +75,12 @@ def create_student_container(student_id, lab_id, norestart=False, save=True, tem
     with open(tmp_file_path, 'w') as file:
         yaml.dump(compose_config, file)
 
-    os.system(f"docker-compose -p {container_name} -f {tmp_file_path} up -d")
+    # old way:
+    # os.system(f"docker-compose -p {container_name} -f {tmp_file_path} up -d")
+    # use subprocess instead of os.system and wait for a response
+    result = subprocess.run(f"docker-compose -p {container_name} -f {tmp_file_path} up -d", shell=True, check=True)
+    if result.returncode != 0:
+        raise ValueError("Error creating container.")
 
     # add nginx server blocks for each subdomain
     # signature for add_server is: add_server(self, student_id, lab_id, subdomain, domain, target_port)
@@ -140,9 +146,13 @@ def delete_student_container(student_id, lab_id, norestart=False):
         print(f"Stopping and removing container {container_name}")
 
         delete_command = f"docker-compose -p {container_name} -f {tmp_file_path} down"
-        exit_code = os.system(delete_command)
 
-        if exit_code != 0:
+        # old way:
+        # exit_code = os.system(delete_command)
+        # use subprocess instead of os.system and wait for a response
+        result = subprocess.run(delete_command, shell=True, check=True)
+
+        if result.returncode != 0:
             print(f"Failed to stop and remove container {container_name} while running command: {delete_command}")
         elif os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
