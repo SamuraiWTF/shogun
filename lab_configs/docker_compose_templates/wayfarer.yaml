@@ -10,7 +10,7 @@ services:
   ticketapp_{{ student_id }}:
     image: ghcr.io/samuraiwtf/wayfarer-app:latest
     ports:
-      - "{{ web_port }}:3000"
+      - "{{ web_port }}:80"
     links:
       - sqldb_{{ student_id }}:sqldb
     depends_on:
