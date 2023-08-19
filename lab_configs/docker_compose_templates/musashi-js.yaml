@@ -16,7 +16,7 @@ services:
       OAUTH_PROVIDER_PORT: 3030
       OAUTH_CLIENT_PORT: 3031
       CSP_APP_PORT: 3041
-      USE_TLS: TRUE
+      USE_TLS: "true"
       JWT_HOST: {{ student_id }}.jwt.{{ lab_id }}.{{ domain }}
       JWT_PORT: 3050
     container_name: '{{ student_id }}_{{ lab_id }}'
