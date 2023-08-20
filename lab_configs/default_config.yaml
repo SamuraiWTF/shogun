@@ -11,7 +11,7 @@ labs:
   - name: wayfarer
     docker_compose: docker_compose_templates/wayfarer.yaml
     subdomain_routes:
-      app: web_port
+      main: web_port
       api: api_port
   - name: musashi-js
     docker_compose: docker_compose_templates/musashi-js.yaml

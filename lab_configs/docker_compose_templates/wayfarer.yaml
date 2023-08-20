@@ -32,6 +32,6 @@ services:
         - API_PUBLIC_PORT={{ api_port }}
         - API_PORT=3001
         - API_CORS_TYPE=literal
-        - API_CORS_POLICY=https://{{ student_id }}.app.{{ lab_id }}.{{ domain }}
+        - API_CORS_POLICY=https://{{ student_id }}.{{ lab_id }}.{{ domain }}
         - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
     container_name: '{{ student_id }}_{{ lab_id }}_api'
