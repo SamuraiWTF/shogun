@@ -96,6 +96,14 @@ server {
 ```
 Both of these should go right before your `include shogun.conf;` line.
 
+6. Restricting access by X-SAMURAIWTF header (optional)
+
+If you are hosting your labs on the Internet, you may want to use this measure to protect the labs from unauthorized access.  This is not a foolproof method, but it will prevent most automated scanners from accessing your labs.
+
+To enable this feature, set the `X_SAMURAIWTF` environment variable to a random string.  This can be done in the `.env` file or by setting the environment variable directly.
+
+The distribute this string to your students so they can use it to access the labs. The students will need to set up a rule in their proxy tool to add the `X-SAMURAIWTF` header to all requests.
+
 ## CLI Usage:
 
 You can use the provided shogun.bat (for Windows) or shogun shell script (for Unix systems) to interact with the CLI. The available commands are:

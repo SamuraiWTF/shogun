@@ -12,6 +12,10 @@ NGINX_CONFIG_PATH = os.path.join(os.path.dirname(NGINX_CONF_DIR), 'shogun.conf')
 # Environment variable for selecting the certificate provider
 CERT_PROVIDER_ENV = os.environ.get('CERT_PROVIDER', 'NONE').upper()
 
+# Add this line at the beginning of the file to load the custom header value
+CUSTOM_HEADER_VALUE = os.environ.get('X_SAMURAIWTF', None)
+
+
 def load_certificate_provider():
     """
     Loads and returns the certificate provider based on the environment configuration.
@@ -80,6 +84,17 @@ class ShogunServer:
             self.listen_ports[self.listen_ports.index("443")] = f"443 ssl"
 
         listen_port_str = "\n".join(f"    listen {port};" for port in self.listen_ports)
+
+        # Make a customer header check (X-SAMURAIWTF) if the environment variable is set. This header is a security
+        # measure to prevent the server from being accessed directly by the IP address.
+        custom_header = ""
+        if CUSTOM_HEADER_VALUE:
+            custom_header = f"""
+    if ($http_x_samuraiwtf != "{CUSTOM_HEADER_VALUE}") {{
+        return 403;
+    }}
+            """
+
         return f"""{self._generate_metadata()}
 server {{
 {ssl_config}
@@ -87,6 +102,7 @@ server {{
     server_name {self.name};
     
     location / {{
+        {custom_header}
         proxy_pass http://{self.target_ip}:{self.target_port};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
