@@ -85,7 +85,7 @@ class ShogunServer:
 
         listen_port_str = "\n".join(f"    listen {port};" for port in self.listen_ports)
 
-        # Make a customer header check (X-SAMURAIWTF) if the environment variable is set. This header is a security
+        # Make a custom header check (X-SAMURAIWTF) if the environment variable is set. This header is a security
         # measure to prevent the server from being accessed directly by the IP address.
         custom_header = ""
         if CUSTOM_HEADER_VALUE:
