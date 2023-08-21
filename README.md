@@ -67,8 +67,34 @@ ROOT_DOMAIN=example.com
 ```
 Use the actual root domain for your lab environment.
 
+5. Handling URLs that don't match a lab:
 
+It is recommended that you handle URLs that don't match any lab environment by responding with an error message. This can be accomplished in your main nginx.conf file by adding instructions such as:
 
+```nginx
+server {
+    listen       80 default_server;
+    server_name  _;
+    location / {
+        return 200 '<html><head><title>Error</title></head><body><h1>Invalid URL</h1><p>Please check the URL and try again.</p></body></html>';
+        add_header Content-Type text/html;
+    }
+}
+
+server {
+    listen       443 ssl default_server;
+    server_name  _;
+
+    ssl_certificate     /path/to/your/certificate.crt;
+    ssl_certificate_key /path/to/your/private.key;
+
+    location / {
+        return 200 '<html><head><title>Error</title></head><body><h1>Invalid URL</h1><p>Please check the URL and try again.</p></body></html>';
+        add_header Content-Type text/html;
+    }
+}
+```
+Both of these should go right before your `include shogun.conf;` line.
 
 ## CLI Usage:
 
