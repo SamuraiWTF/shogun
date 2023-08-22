@@ -236,3 +236,8 @@ Ensure you update any central list or configuration within Shogun that keeps tra
 ```
 CONFIG_FILE=your_config_file.yaml
 ```
+
+## Tools and Scripts
+
+### docker_peak_mem.sh
+This bash script keeps track of the maximum memory usage of all running containers. It uses `docker stats` to accomplish this. This is intended to help determine the necessary memory requirements for a lab server while testing new container builds.
