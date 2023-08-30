@@ -85,7 +85,7 @@ def create_student_container(student_id, lab_id, norestart=False, save=True, tem
     # add nginx server blocks for each subdomain
     # signature for add_server is: add_server(self, student_id, lab_id, subdomain, domain, target_port)
     for subdomain, port in subdomain_port_mapping.items():
-        nginx.add_server(student_id, lab_id, subdomain, domain, port)
+        nginx.add_server(student_id, lab_id, subdomain, domain, port, features=lab_config.get('features', {}))
 
     if save:
         nginx.save()

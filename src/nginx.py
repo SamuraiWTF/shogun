@@ -29,7 +29,7 @@ def load_certificate_provider():
 
 
 class ShogunServer:
-    def __init__(self, student_id, subdomain, lab_id, domain, target_ip, target_port, listen_ports=None):
+    def __init__(self, student_id, subdomain, lab_id, domain, target_ip, target_port, listen_ports=None, features=[]):
         self.certificate_provider = load_certificate_provider()
         if listen_ports is None:
             # If no listen ports are specified, default to 80 and 443 if the NoneProvider is not used
@@ -46,16 +46,16 @@ class ShogunServer:
         self.target_port = target_port
         # convert listen ports to strings
         self.listen_ports = [str(port) for port in listen_ports]
-
+        self.features = features
 
     # Generate a single metadata comment for simply parsing the config to retrieve the servers from the nginx config
     # The format will be "# METADATA:student_id|subdomain|lab_id|domain|target_ip|target_port|listen_ports"
     def _generate_metadata(self):
         # the ports are stored as strings and may include 'ssl' if the certificate provider is not NoneProvider.
         # For the metadata we need to remove the 'ssl' string so that it can be parsed as an integer
-        listen_ports = ",".join([port.replace("ssl", "") for port in self.listen_ports])
-
-        return f"# METADATA:{self.student_id}|{self.subdomain}|{self.lab_id}|{self.domain}|{self.target_ip}|{self.target_port}|{listen_ports}"
+        listen_ports= ",".join([port.replace("ssl", "") for port in self.listen_ports])
+        features_string = ",".join(self.features)
+        return f"# METADATA:{self.student_id}|{self.subdomain}|{self.lab_id}|{self.domain}|{self.target_ip}|{self.target_port}|{listen_ports}|{features_string}"
 
     # Class method to parse a metadata comment line and return a Server object
     # All parameters are strings except for listen_ports, which is a list of integers
@@ -63,8 +63,13 @@ class ShogunServer:
     def from_metadata(cls, metadata):
         metadata = metadata.replace("# METADATA:", "")
         metadata = metadata.split("|")
+        # Since features_list might not exist in the metadata, we need to check if it exists before splitting it
+        if len(metadata) == 8:
+            features_list = metadata[7].split(",")
+        else:
+            features_list = []
         return cls(metadata[0], metadata[1], metadata[2], metadata[3], metadata[4], metadata[5],
-                   [int(port) for port in metadata[6].split(",")])
+                   [int(port) for port in metadata[6].split(",")], features_list)
 
     # Convenience method to print the route map (e.g. "student_id.subdomain.lab_id.domain -> target_ip:target_port")
     def print_route_map(self):
@@ -95,6 +100,15 @@ class ShogunServer:
     }}
             """
 
+        websocket_support = ""
+        if "ws" in self.features:
+            websocket_support = """
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+            """
+
+
         return f"""{self._generate_metadata()}
 server {{
 {ssl_config}
@@ -107,6 +121,7 @@ server {{
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+{websocket_support}
     }}
 }}"""
 
@@ -150,8 +165,16 @@ class NginxConfig:
                     self.in_use_ports.add(shogun_server.target_port)
             return servers
 
-    def add_server(self, student_id, lab_id, subdomain, domain, target_port, listen_ports=None, target_ip='127.0.0.1'):
-        new_server = ShogunServer(student_id, subdomain, lab_id, domain, target_ip, target_port, listen_ports)
+    def add_server(self, student_id, lab_id, subdomain, domain, target_port, listen_ports=None, target_ip='127.0.0.1',
+                   features=None):
+        feature_list = []
+        # If features are specified, check if the websockets feature is "true". If so, add "ws" features list.
+        if features:
+            if features.get('websockets', False):
+                feature_list.append('ws')
+
+        new_server = ShogunServer(student_id, subdomain, lab_id, domain, target_ip, target_port, listen_ports,
+                                  feature_list)
 
         if not any(server.name == new_server.name for server in self.servers):
             self.servers.append(new_server)
