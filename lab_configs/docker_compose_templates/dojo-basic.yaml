@@ -23,7 +23,7 @@ services:
       - 'student_id={{ student_id }}'
     networks:
       - '{{ student_id }}-custom-network'
-      -
+
 networks:
   '{{ student_id }}-custom-network':
     driver: default
