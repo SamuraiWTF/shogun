@@ -6,6 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: samurai
       MYSQL_DATABASE: samurai_dojo_basic
     container_name: '{{ student_id }}_{{ lab_id }}_db'
+    restart: unless-stopped
 
   dojo-basic-web_{{ student_id }}:
     image: ghcr.io/samuraiwtf/dojo-basic:latest
@@ -19,4 +20,5 @@ services:
     labels:
       - 'lab_id={{ lab_id }}'
       - 'student_id={{ student_id }}'
+    restart: unless-stopped
 

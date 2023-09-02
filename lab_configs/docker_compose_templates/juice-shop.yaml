@@ -8,5 +8,6 @@ services:
     labels:
       - 'lab_id={{ lab_id }}'
       - 'student_id={{ student_id }}'
+    restart: unless-stopped
 
 

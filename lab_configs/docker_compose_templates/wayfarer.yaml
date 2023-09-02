@@ -6,6 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: changeme
       constraint: node==node01
     container_name: '{{ student_id }}_{{ lab_id }}_db'
+    restart: unless-stopped
 
   ticketapp_{{ student_id }}:
     image: ghcr.io/samuraiwtf/wayfarer-app:latest
@@ -19,6 +20,7 @@ services:
         - APP_PORT=443
         - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
     container_name: '{{ student_id }}_{{ lab_id }}_app'
+    restart: unless-stopped
 
   ticketapi_{{ student_id }}:
     image: ghcr.io/samuraiwtf/wayfarer-api:latest
@@ -35,3 +37,4 @@ services:
         - API_CORS_POLICY=https://{{ student_id }}.{{ lab_id }}.{{ domain }}
         - REACT_APP_API_ORIGIN=https://{{ student_id }}.api.{{ lab_id }}.{{ domain }}
     container_name: '{{ student_id }}_{{ lab_id }}_api'
+    restart: unless-stopped
