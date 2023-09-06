@@ -4,6 +4,7 @@ import yaml
 from nginx import NginxConfig
 from utils import get_available_ports
 from lab_config import config
+from fnmatch import fnmatch
 import docker
 from jinja2 import Template
 
@@ -116,11 +117,14 @@ def multi_create_student_container(student_id, lab_id, count, start=1, norestart
 # all containers for the student are deleted.
 def delete_student_container(student_id, lab_id, norestart=False):
     servers_to_delete = []
+    unique_containers_to_delete = set()  # Track unique containers
     for server in nginx.servers:
         try:
-            if student_id == '*' or server.student_id == student_id:
-                if lab_id == '*' or server.lab_id == lab_id:
+            # check if the server matches the student_id and lab_id, use fnmatch for wildcard support
+            if fnmatch(server.student_id, student_id):  # Updated condition
+                if fnmatch(server.lab_id, lab_id):  # Updated condition
                     servers_to_delete.append(server)
+                    unique_containers_to_delete.add(f"{server.student_id}-{server.lab_id}")  # Add to unique container set
         except IndexError:
             # Skip server if it doesn't have the expected naming format
             continue
@@ -128,7 +132,7 @@ def delete_student_container(student_id, lab_id, norestart=False):
     for server in servers_to_delete:
         nginx.remove_server(server.name)
 
-        container_name = f"{server.student_id}-{server.lab_id}"
+    for container_name in unique_containers_to_delete:
 
         # Get the directory where compose.py is located
         compose_dir = os.path.dirname(os.path.abspath(__file__))
