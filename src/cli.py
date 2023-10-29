@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 
 from compose import create_student_container, delete_student_container, list_available_labs, \
@@ -39,6 +40,8 @@ def main():
     list_available_parser = subparsers.add_parser('list', help='List labs')
     list_available_parser.add_argument('type', choices=['available', 'active'],
                                        help='Specify whether to list available or active labs.')
+    list_available_parser.add_argument('--format', choices=['json', 'text'], default='text',
+                                       help='Output format: text or json (default: text)')
 
     args = parser.parse_args()
 
@@ -72,26 +75,42 @@ def main():
             labs = []
             for lab in config['labs']:
                 labs.append(lab['name'])
-            if len(labs) == 0:
+            if len(labs) == 0 and args.format == 'text':
                 print("No labs available.")
                 return
             else:
-                print("Available labs:")
-                for lab in labs:
-                    print(f"- {lab}")
+                if args.format == 'json':
+                    print(json.dumps(labs))
+                else:
+                    print("Available labs:")
+                    for lab in labs:
+                        print(f"- {lab}")
         elif args.type == 'active':
             combinations = list_student_lab_combinations()
             if not combinations:
-                print("No active student-lab combinations.")
+                if args.format == 'json':
+                    print(json.dumps({}))
+                else:
+                    print("No active student-lab combinations.")
                 return
             else:
-                print("Active student-lab combinations:")
-                for lab_id, students in combinations.items():
-                    print(f"Lab {lab_id}:")
-                    for student_id in students:
-                        print(f"  - {student_id}")
+                if args.format == 'json':
+                    print(json.dumps(combinations))
+                else:
+                    print("Active student-lab combinations:")
+                    for lab_id, students in combinations.items():
+                        print(f"Lab {lab_id}:")
+                        for student_id in students:
+                            print(f"  - {student_id}")
     else:
         parser.print_help()
+
+
+def print_or_json(text, output_format):
+    if output_format == 'json':
+        print(json.dumps(text))
+    else:
+        print(text)
 
 
 if __name__ == '__main__':
