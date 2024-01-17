@@ -1,11 +1,22 @@
 import argparse
 import json
 import sys
+import time
 
 from compose import create_student_container, delete_student_container, list_available_labs, \
     list_student_lab_combinations, multi_create_student_container
 from lab_config import config
 
+
+def reload_containers(pause_duration=8):
+    combinations = list_student_lab_combinations()
+    for lab_id, students in combinations.items():
+        for student_id in students:
+            delete_student_container(student_id, lab_id, True)  # assuming norestart is False
+            print(f"Pausing for {pause_duration} seconds...")
+            time.sleep(pause_duration)  # pause for specified duration
+            create_student_container(student_id, lab_id, False)  # assuming norestart is False
+            print(f"Reloaded container for student {student_id} in lab {lab_id}.")
 
 def main():
     if sys.platform.startswith('win32'):
@@ -42,6 +53,10 @@ def main():
                                        help='Specify whether to list available or active labs.')
     list_available_parser.add_argument('--format', choices=['json', 'text'], default='text',
                                        help='Output format: text or json (default: text)')
+
+    reload_parser = subparsers.add_parser('reload', help='Reload student containers')
+    reload_parser.add_argument('--pause', type=int, default=8,
+                               help='Pause duration between delete and create operations (in seconds)')
 
     args = parser.parse_args()
 
@@ -102,6 +117,9 @@ def main():
                         print(f"Lab {lab_id}:")
                         for student_id in students:
                             print(f"  - {student_id}")
+
+    elif args.command == 'reload':
+        reload_containers(args.pause)
     else:
         parser.print_help()
 
