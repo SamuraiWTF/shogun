@@ -1,6 +1,6 @@
 version: '3'
 services:
-  dojo-basic_{{ student_id }}:
+  dojo-scavenger_{{ student_id }}:
     image: ghcr.io/samuraiwtf/dojo-scavenger-lite:latest
     ports:
       - "{{ web_port }}:80"
