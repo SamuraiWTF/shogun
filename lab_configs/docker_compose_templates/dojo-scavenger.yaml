@@ -1,7 +1,7 @@
 version: '3'
 services:
   dojo-basic_{{ student_id }}:
-    image: ghcr.io/samuraiwtf/dojo-basic-lite:latest
+    image: ghcr.io/samuraiwtf/dojo-scavenger-lite:latest
     ports:
       - "{{ web_port }}:80"
     container_name: '{{ student_id }}_{{ lab_id }}'
