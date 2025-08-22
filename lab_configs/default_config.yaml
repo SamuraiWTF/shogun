@@ -26,3 +26,15 @@ labs:
     docker_compose: docker_compose_templates/dvwa.yaml
     subdomain_routes:
       main: web_port
+  - name: dojo-scavenger
+    docker_compose: docker_compose_templates/dojo-scavenger.yaml
+    subdomain_routes:
+      main: web_port
+  - name: crapi
+    docker_compose: docker_compose_templates/crapi.yaml
+    subdomain_routes:
+      main: web_port
+  - name: crapi-lite
+    docker_compose: docker_compose_templates/crapi-lite.yaml
+    subdomain_routes:
+      main: web_port
