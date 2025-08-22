@@ -25,7 +25,7 @@ def create_student_container(student_id, lab_id, norestart=False, save=True, tem
         if not os.path.exists(docker_compose_template_path):
             raise ValueError(f"Could not find docker compose template at {docker_compose_template_path}")
 
-        template = Template(open(docker_compose_template_path).read())
+        template = Template(open(docker_compose_template_path, encoding='utf-8').read())
 
     existing_containers = {c.name for c in client.containers.list(all=True)}
 
